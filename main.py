@@ -1,16 +1,36 @@
-# This is a sample Python script.
+import numpy as np
+import pyaudio as pa
+import struct
+import matplotlib.pyplot as plt
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+CHUNK = 1024 * 2
+FORMAT = pa.paInt16
+CHANNELS = 1
+RATE = 44100 # in Hz
+
+p = pa.PyAudio()
+
+stream = p.open(
+    format = FORMAT,
+    channels = CHANNELS,
+    rate = RATE,
+    input=True,
+    output=True,
+    frames_per_buffer=CHUNK
+)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
+fig,ax = plt.subplots()
+x = np.arange(0,2*CHUNK,2)
+line, = ax.plot(x, np.random.rand(CHUNK),'r')
+ax.set_ylim(-60000,60000)
+ax.ser_xlim = (0,CHUNK)
+fig.show()
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+while 1:
+    data = stream.read(CHUNK)
+    dataInt = struct.unpack(str(CHUNK) + 'h', data)
+    line.set_ydata(dataInt)
+    fig.canvas.draw()
+    fig.canvas.flush_events()
