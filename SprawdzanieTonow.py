@@ -1,5 +1,5 @@
 import numpy as np
-import librosa
+from scipy.io import wavfile
 
 GUITAR_NOTES = {
     'E2': 82.41,
@@ -10,13 +10,23 @@ GUITAR_NOTES = {
     'E4': 329.63
 }
 
-def detect_pitch_yin(file_path):
-    y, sr = librosa.load(file_path)
-    f0 = librosa.yin(y, fmin=70, fmax=350, sr=sr)
-    f0 = f0[~np.isnan(f0)]
-    if len(f0) == 0:
-        return None
-    return np.median(f0)
+def read_wav(file_path):
+    sr, data = wavfile.read(file_path)
+    if len(data.shape) == 2:
+        data = data.mean(axis=1)
+    return sr, data
+
+def autocorrelation_pitch(signal, sr, fmin=70, fmax=350):
+    corr = np.correlate(signal, signal, mode='full')
+    corr = corr[len(corr)//2:]
+
+    min_lag = int(sr / fmax)
+    max_lag = int(sr / fmin)
+
+    peak = np.argmax(corr[min_lag:max_lag]) + min_lag
+
+    pitch = sr / peak
+    return pitch
 
 def match_guitar_note(freq):
     closest_note = min(GUITAR_NOTES, key=lambda note: abs(GUITAR_NOTES[note] - freq))
@@ -31,11 +41,14 @@ def match_guitar_note(freq):
 
 if __name__ == "__main__":
     file_path = "testE.wav"
-    freq = detect_pitch_yin(file_path)
-    if freq is None:
-        print("Nie udało się wykryć częstotliwości.")
-    else:
-        note, status, diff = match_guitar_note(freq)
-        print(f"Dominująca częstotliwość: {freq:.2f} Hz")
-        print(f"Najbliższy dźwięk gitarowy: {note}")
-        print(f"Struna jest {status} ({diff} Hz różnicy)")
+
+    sr, data = read_wav(file_path)
+
+    segment = data[:sr*2]
+
+    freq = autocorrelation_pitch(segment, sr)
+    note, status, diff = match_guitar_note(freq)
+
+    print(f"Dominująca częstotliwość (autokorelacja): {freq:.2f} Hz")
+    print(f"Najbliższy dźwięk gitarowy: {note}")
+    print(f"Struna jest {status} ({diff} Hz różnicy)")
