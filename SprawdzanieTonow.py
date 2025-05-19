@@ -39,6 +39,8 @@ def match_guitar_note(freq):
         status = "too low"
     return closest_note, status, round(diff, 2)
 
+
+
 if __name__ == "__main__":
     file_path = "testE.wav"
 
