@@ -1,5 +1,10 @@
 import numpy as np
 from scipy.io import wavfile
+import yin
+import MPM
+import matplotlib
+matplotlib.use('TkAgg')
+
 
 GUITAR_NOTES = {
     'E2': 82.41,
@@ -48,9 +53,13 @@ if __name__ == "__main__":
 
     segment = data[:sr*2]
 
-    freq = autocorrelation_pitch(segment, sr)
-    note, status, diff = match_guitar_note(freq)
+    freq_auto = autocorrelation_pitch(segment, sr)
+    freq_yin = yin.yin(segment, sr)
+    freq_mpm,Wret = MPM.compute_nsdf(segment, 8192)
+    note, status, diff = match_guitar_note(freq_auto)
 
-    print(f"Dominująca częstotliwość (autokorelacja): {freq:.2f} Hz")
+    print(f"Dominująca częstotliwość (autokorelacja): {freq_auto:.2f} Hz")
+    print(f"Dominująca częstotliwość (yin): {freq_yin:.2f} Hz")
+    print(f"Dominująca częstotliwość (MPM): {freq_mpm:.2f} Hz")
     print(f"Najbliższy dźwięk gitarowy: {note}")
     print(f"Struna jest {status} ({diff} Hz różnicy)")

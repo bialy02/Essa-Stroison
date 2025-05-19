@@ -45,8 +45,4 @@ def yin(signal, sr, W=None, max_freq=500, threshold=0.1):
 
 
 
-if __name__ == "__main__":
 
-    signal, sr = librosa.load("testE.wav", sr=None)
-    estimated_f0 = yin(signal, sr)
-    print(f"Oszacowana częstotliwość f0: {estimated_f0:.2f} Hz")

@@ -46,26 +46,4 @@ def pick_pitch_from_nsdf(nsdf, fs, k=0.9):
             return fs / idx
     return 0
 
-# === UŻYCIE ===
-file_path = "testE.wav"
-rate, data = wav.read(file_path)
 
-if data.ndim > 1:
-    data = data[:, 0]
-data = data.astype(np.float64)
-
-W = 8192
-start = len(data) // 3
-signal = data[start:start + W]
-nsdf, _ = compute_nsdf(signal, W)
-pitch = pick_pitch_from_nsdf(nsdf, rate)
-
-print(f"Wykryta częstotliwość: {pitch:.2f} Hz")
-
-# Wykres NSDF
-plt.plot(nsdf)
-plt.title(f"NSDF - wykryta częstotliwość: {pitch:.2f} Hz")
-plt.xlabel("Opóźnienie (samples)")
-plt.ylabel("NSDF")
-plt.grid(True)
-plt.show()

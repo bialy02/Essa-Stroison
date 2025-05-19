@@ -3,6 +3,7 @@ import pyaudio as pa
 import struct
 import matplotlib.pyplot as plt
 
+
 CHUNK = 1024 * 2
 FORMAT = pa.paInt16
 CHANNELS = 1
