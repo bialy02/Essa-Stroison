@@ -2,6 +2,7 @@ import numpy as np
 from scipy.io import wavfile
 import yin
 import MPM
+import time
 import matplotlib
 matplotlib.use('TkAgg')
 
@@ -53,13 +54,24 @@ if __name__ == "__main__":
 
     segment = data[:sr*2]
 
+    start_auto = time.time()
+
     freq_auto = autocorrelation_pitch(segment, sr)
+
+    end_auto = time.time()
+
+    start_yin = time.time()
     freq_yin = yin.yin(segment, sr)
+    end_yin = time.time()
+
+    start_mpm = time.time()
     freq_mpm = MPM.detect_pitch_from_wav("testE.wav")
+    end_mpm = time.time()
+
     note, status, diff = match_guitar_note(freq_auto)
 
-    print(f"Dominująca częstotliwość (autokorelacja): {freq_auto:.2f} Hz")
-    print(f"Dominująca częstotliwość (yin): {freq_yin:.2f} Hz")
-    print(f"Dominująca częstotliwość (MPM): {freq_mpm:.2f} Hz")
+    print(f"Dominująca częstotliwość (autokorelacja): {freq_auto:.2f} Hz, czas wykonywania {end_auto - start_auto:.2f} sekund")
+    print(f"Dominująca częstotliwość (yin): {freq_yin:.2f} Hz, czas wykonywania {end_yin - start_yin:.2f} sekund")
+    print(f"Dominująca częstotliwość (MPM): {freq_mpm:.2f} Hz, czas wykonywania {end_mpm - start_mpm:.2f} sekund")
     print(f"Najbliższy dźwięk gitarowy: {note}")
     print(f"Struna jest {status} ({diff} Hz różnicy)")
