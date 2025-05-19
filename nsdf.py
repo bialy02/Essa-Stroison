@@ -16,7 +16,7 @@ def compute_nsdf(signal, W):
     x2 = window**2
     m_tau = np.array([np.sum(x2[:W - τ] + x2[τ:W]) for τ in range(w)])
     nsdf = 2 * r_tau / m_tau
-    return nsdf
+    return nsdf, w
 
 def pick_pitch_from_nsdf(nsdf, fs, k=0.9):
     nmax = np.max(nsdf[1:])
@@ -44,10 +44,15 @@ def pick_pitch_from_nsdf(nsdf, fs, k=0.9):
             return fs / idx
     return 0
 
-def detect_pitch_from_signal(signal, fs, window_size=8192, k=0.9):
-    if len(signal) < window_size:
-        raise ValueError("Signal is shorter than window size.")
-    segment = signal[:window_size]
-    nsdf = compute_nsdf(segment, window_size)
-    pitch = pick_pitch_from_nsdf(nsdf, fs, k=k)
+
+def nsdf_pitch_detection(signal, fs, W=None):
+    if W is None or W > len(signal):
+        W = len(signal)
+
+    signal = signal[:W]
+    signal = signal / np.max(np.abs(signal))  # normalizacja
+
+    nsdf, _ = compute_nsdf(signal, W)
+    pitch = pick_pitch_from_nsdf(nsdf, fs)
     return pitch
+

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.io import wavfile
 import yin
-import MPM
+import nsdf
 import time
 import autocorrelation
 import matplotlib
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     sr, data = read_wav(file_path)
 
-    segment = data[:sr*2]
+    segment = data[sr:sr*3]
 
     start_auto = time.time()
 
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     end_yin = time.time()
 
     start_mpm = time.time()
-    freq_mpm = MPM.detect_pitch_from_wav()
+    freq_mpm = nsdf.nsdf_pitch_detection(segment, sr)
     end_mpm = time.time()
 
     note, status, diff = match_guitar_note(freq_auto)
