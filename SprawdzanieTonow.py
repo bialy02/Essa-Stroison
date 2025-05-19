@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     freq_auto = autocorrelation_pitch(segment, sr)
     freq_yin = yin.yin(segment, sr)
-    freq_mpm,Wret = MPM.compute_nsdf(segment, 8192)
+    freq_mpm = MPM.detect_pitch_from_wav("testE.wav")
     note, status, diff = match_guitar_note(freq_auto)
 
     print(f"Dominująca częstotliwość (autokorelacja): {freq_auto:.2f} Hz")

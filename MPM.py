@@ -18,7 +18,7 @@ def compute_nsdf(signal, W):
     x2 = window**2
     m_tau = np.array([np.sum(x2[:W - τ] + x2[τ:W]) for τ in range(w)])
     nsdf = 2 * r_tau / m_tau
-    return nsdf, w
+    return nsdf
 
 def pick_pitch_from_nsdf(nsdf, fs, k=0.9):
     nmax = np.max(nsdf[1:])
@@ -46,4 +46,15 @@ def pick_pitch_from_nsdf(nsdf, fs, k=0.9):
             return fs / idx
     return 0
 
+def detect_pitch_from_wav(file_path, window_size=8192, k=0.9):
+    rate, data = wav.read(file_path)
+    if data.ndim > 1:
+        data = data[:, 0]
+    data = data.astype(np.float64)
 
+    start = len(data) // 3
+    signal = data[start:start + window_size]
+    nsdf = compute_nsdf(signal, window_size)
+    pitch = pick_pitch_from_nsdf(nsdf, rate, k=k)
+
+    return pitch
