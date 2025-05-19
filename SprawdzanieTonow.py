@@ -3,6 +3,7 @@ from scipy.io import wavfile
 import yin
 import MPM
 import time
+import autocorrelation
 import matplotlib
 matplotlib.use('TkAgg')
 
@@ -22,17 +23,7 @@ def read_wav(file_path):
         data = data.mean(axis=1)
     return sr, data
 
-def autocorrelation_pitch(signal, sr, fmin=70, fmax=350):
-    corr = np.correlate(signal, signal, mode='full')
-    corr = corr[len(corr)//2:]
 
-    min_lag = int(sr / fmax)
-    max_lag = int(sr / fmin)
-
-    peak = np.argmax(corr[min_lag:max_lag]) + min_lag
-
-    pitch = sr / peak
-    return pitch
 
 def match_guitar_note(freq):
     closest_note = min(GUITAR_NOTES, key=lambda note: abs(GUITAR_NOTES[note] - freq))
@@ -56,7 +47,7 @@ if __name__ == "__main__":
 
     start_auto = time.time()
 
-    freq_auto = autocorrelation_pitch(segment, sr)
+    freq_auto = autocorrelation.autocorrelation_pitch(segment, sr)
 
     end_auto = time.time()
 
@@ -65,7 +56,7 @@ if __name__ == "__main__":
     end_yin = time.time()
 
     start_mpm = time.time()
-    freq_mpm = MPM.detect_pitch_from_wav("testE.wav")
+    freq_mpm = MPM.detect_pitch_from_wav()
     end_mpm = time.time()
 
     note, status, diff = match_guitar_note(freq_auto)

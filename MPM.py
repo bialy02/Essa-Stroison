@@ -1,6 +1,4 @@
 import numpy as np
-import scipy.io.wavfile as wav
-import matplotlib.pyplot as plt
 from scipy.fft import fft, ifft
 
 def compute_nsdf(signal, W):
@@ -46,15 +44,10 @@ def pick_pitch_from_nsdf(nsdf, fs, k=0.9):
             return fs / idx
     return 0
 
-def detect_pitch_from_wav(file_path, window_size=8192, k=0.9):
-    rate, data = wav.read(file_path)
-    if data.ndim > 1:
-        data = data[:, 0]
-    data = data.astype(np.float64)
-
-    start = len(data) // 3
-    signal = data[start:start + window_size]
-    nsdf = compute_nsdf(signal, window_size)
-    pitch = pick_pitch_from_nsdf(nsdf, rate, k=k)
-
+def detect_pitch_from_signal(signal, fs, window_size=8192, k=0.9):
+    if len(signal) < window_size:
+        raise ValueError("Signal is shorter than window size.")
+    segment = signal[:window_size]
+    nsdf = compute_nsdf(segment, window_size)
+    pitch = pick_pitch_from_nsdf(nsdf, fs, k=k)
     return pitch
