@@ -1,37 +1,54 @@
 import numpy as np
-import pyaudio as pa
-import struct
-import matplotlib.pyplot as plt
+import sounddevice as sd
+import time
+from yin import yin
 
 
-CHUNK = 1024 * 2
-FORMAT = pa.paInt16
-CHANNELS = 1
-RATE = 44100 # in Hz
+# Zakładam, że masz już funkcję yin zdefiniowaną w tym samym pliku lub zaimportowaną
 
-p = pa.PyAudio()
-
-stream = p.open(
-    format = FORMAT,
-    channels = CHANNELS,
-    rate = RATE,
-    input=True,
-    output=True,
-    frames_per_buffer=CHUNK
-)
+GUITAR_NOTES = {
+    'E2': 82.41,
+    'A2': 110.00,
+    'D3': 146.83,
+    'G3': 196.00,
+    'B3': 246.94,
+    'E4': 329.63
+}
 
 
+def match_guitar_note(freq):
+    closest_note = min(GUITAR_NOTES, key=lambda note: abs(GUITAR_NOTES[note] - freq))
+    diff = freq - GUITAR_NOTES[closest_note]
+    if abs(diff) < 1:
+        status = "in tune"
+    elif diff > 0:
+        status = "too high"
+    else:
+        status = "too low"
+    return closest_note, status, round(diff, 2)
 
-fig,ax = plt.subplots()
-x = np.arange(0,2*CHUNK,2)
-line, = ax.plot(x, np.random.rand(CHUNK),'r')
-ax.set_ylim(-60000,60000)
-ax.ser_xlim = (0,CHUNK)
-fig.show()
 
-while 1:
-    data = stream.read(CHUNK)
-    dataInt = struct.unpack(str(CHUNK) + 'h', data)
-    line.set_ydata(dataInt)
-    fig.canvas.draw()
-    fig.canvas.flush_events()
+def audio_callback(indata, frames, time_info, status):
+    # indata shape: (frames, channels), we use mono so take first channel
+    signal = indata[:, 0]
+
+    freq = yin(signal, sample_rate)
+    if freq > 0:
+        note, status_note, diff = match_guitar_note(freq)
+        print(f"Detected frequency: {freq:.2f} Hz - Note: {note}, Status: {status_note} ({diff} Hz)")
+
+
+if __name__ == "__main__":
+    sample_rate = 44100
+    block_duration = 0.1  # sekundy, długość jednego bloku analizy
+    block_size = int(sample_rate * block_duration)
+
+    print("Starting real-time pitch detection. Play guitar note...")
+
+    with sd.InputStream(channels=1, callback=audio_callback, samplerate=sample_rate, blocksize=block_size):
+        print("Press Ctrl+C to stop")
+        try:
+            while True:
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            print("Stopped")
