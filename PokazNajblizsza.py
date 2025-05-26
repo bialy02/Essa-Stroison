@@ -17,7 +17,7 @@ GUITAR_NOTES = {
 def match_guitar_note(freq):
     closest_note = min(GUITAR_NOTES, key=lambda note: abs(GUITAR_NOTES[note] - freq))
     diff = freq - GUITAR_NOTES[closest_note]
-    if abs(diff) < 1:
+    if abs(diff) < 0.4:
         status = "in tune"
     elif diff > 0:
         status = "too high"
