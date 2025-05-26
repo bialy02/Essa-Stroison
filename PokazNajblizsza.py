@@ -4,8 +4,6 @@ import time
 from yin import yin
 
 
-# Zakładam, że masz już funkcję yin zdefiniowaną w tym samym pliku lub zaimportowaną
-
 GUITAR_NOTES = {
     'E2': 82.41,
     'A2': 110.00,
@@ -29,7 +27,6 @@ def match_guitar_note(freq):
 
 
 def audio_callback(indata, frames, time_info, status):
-    # indata shape: (frames, channels), we use mono so take first channel
     signal = indata[:, 0]
 
     freq = yin(signal, sample_rate)
@@ -40,7 +37,7 @@ def audio_callback(indata, frames, time_info, status):
 
 if __name__ == "__main__":
     sample_rate = 44100
-    block_duration = 0.1  # sekundy, długość jednego bloku analizy
+    block_duration = 0.1
     block_size = int(sample_rate * block_duration)
 
     print("Starting real-time pitch detection. Play guitar note...")
