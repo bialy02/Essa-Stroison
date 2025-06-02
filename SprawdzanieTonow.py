@@ -23,6 +23,12 @@ def read_wav(file_path):
         data = data.mean(axis=1)
     return sr, data
 
+import numpy as np
+
+def generuj_sinus(freq, sr, czas_trwania, amplituda=1.0):
+    t = np.linspace(0, czas_trwania, int(sr * czas_trwania), endpoint=False)
+    sinus = amplituda * np.sin(2 * np.pi * freq * t)
+    return sr, sinus
 
 
 def match_guitar_note(freq):
@@ -41,9 +47,9 @@ def match_guitar_note(freq):
 if __name__ == "__main__":
     file_path = "testE.wav"
 
-    sr, data = read_wav(file_path)
-
-    segment = data[sr:sr*3]
+    #sr, data = read_wav(file_path)
+    sr, data = generuj_sinus(100, 800, 0.5)
+    segment = data
 
     start_auto = time.time()
 
@@ -65,4 +71,4 @@ if __name__ == "__main__":
     print(f"Dominująca częstotliwość (yin): {freq_yin:.2f} Hz, czas wykonywania {end_yin - start_yin:.2f} sekund")
     print(f"Dominująca częstotliwość (MPM): {freq_mpm:.2f} Hz, czas wykonywania {end_mpm - start_mpm:.2f} sekund")
     print(f"Najbliższy dźwięk gitarowy: {note}")
-    print(f"Struna jest {status} ({diff} Hz różnicy)")
+   # print(f"Struna jest {status} ({diff} Hz różnicy)")
