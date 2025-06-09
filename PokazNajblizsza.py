@@ -16,14 +16,15 @@ GUITAR_NOTES = {
 
 def match_guitar_note(freq):
     closest_note = min(GUITAR_NOTES, key=lambda note: abs(GUITAR_NOTES[note] - freq))
-    diff = freq - GUITAR_NOTES[closest_note]
+    target_freq = GUITAR_NOTES[closest_note]
+    diff = freq - target_freq
     if abs(diff) < 1:
         status = "in tune"
     elif diff > 0:
         status = "too high"
     else:
         status = "too low"
-    return closest_note, status, round(diff, 2)
+    return closest_note, status, round(diff, 2), target_freq
 
 
 def audio_callback(indata, frames, time_info, status):

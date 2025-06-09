@@ -1,10 +1,9 @@
-import numpy as np
-import sounddevice as sd
-import time
 import tkinter as tk
 from tkinter import ttk, messagebox
+import sounddevice as sd
+import PokazNajblizsza
+from tons import frequency_to_cents
 from yin import yin
-import PokazNajblizsza 
 
 GUITAR_NOTES = {
     'E2': 82.41,
@@ -44,7 +43,6 @@ class TunerApp:
         frame = ttk.Frame(self.root, padding=20)
         frame.pack()
 
-        # Mode selection using Radiobuttons (behaves like a switch)
         mode_frame = ttk.Frame(frame)
         mode_frame.pack(pady=5)
         ttk.Radiobutton(mode_frame, text="Tryb automatyczny", variable=self.tuning_mode, value="auto", command=self.toggle_mode).pack(side=tk.LEFT, padx=5)
@@ -70,16 +68,16 @@ class TunerApp:
         self.status_label = ttk.Label(frame, text="", font=("Arial", 14))
         self.status_label.pack(pady=10)
 
-        self.toggle_mode() # Set initial state
+        self.toggle_mode()
 
     def toggle_mode(self):
         if self.tuning_mode.get() == "auto":
-            self.manual_selection_frame.pack_forget() # Hide manual selection
+            self.manual_selection_frame.pack_forget()
             self.status_label.config(text="Tryb automatyczny: zagraj na gitarze!")
         else:
-            self.manual_selection_frame.pack() # Show manual selection
+            self.manual_selection_frame.pack()
             self.status_label.config(text="Wybierz strunę i kliknij Start")
-        self.stop() # Stop listening when mode changes
+        self.stop()
 
     def audio_callback(self, indata, frames, time_info, status):
         signal = indata[:, 0]
@@ -87,12 +85,24 @@ class TunerApp:
 
         if freq > 0:
             if self.tuning_mode.get() == "auto":
-                note, status_note, diff = PokazNajblizsza.match_guitar_note(freq) # Utilize the existing function
-                self.update_status(f"Częstotliwość: {freq:.2f} Hz\nNote: {note}, Status: {status_note} ({diff} Hz)")
+                note, status_note, diff, target_freq = PokazNajblizsza.match_guitar_note(freq)
+                cents = frequency_to_cents(freq, target_freq)
+                semitones = cents / 100
+                self.update_status(
+                    f"Częstotliwość: {freq:.2f} Hz\n"
+                    f"Note: {note}, Status: {status_note} ({diff:+.2f} Hz)\n"
+                    f"Różnica: {cents:+.1f} centów ({semitones:+.2f} półtonu)"
+                )
             else:
                 target_freq = GUITAR_NOTES[self.selected_string.get()]
                 status_text, diff = match_to_target(freq, target_freq)
-                self.update_status(f"Częstotliwość: {freq:.2f} Hz\nStatus: {status_text} ({diff} Hz)")
+                cents = frequency_to_cents(freq, target_freq)
+                semitones = cents / 100
+                self.update_status(
+                    f"Częstotliwość: {freq:.2f} Hz\n"
+                    f"Status: {status_text} ({diff} Hz)\n"
+                    f"Różnica: {cents:+.1f} centów ({semitones:+.2f} półtonu"
+                 )
 
     def update_status(self, text):
         self.root.after(0, lambda: self.status_label.config(text=text))
@@ -130,7 +140,6 @@ class TunerApp:
         self.listening = False
         self.start_btn.config(state=tk.NORMAL)
         self.stop_btn.config(state=tk.DISABLED)
-        # Enable/disable combobox based on the current mode
         if self.tuning_mode.get() == "manual":
             self.combo.config(state='readonly')
             self.status_label.config(text="Wybierz strunę i kliknij Start")
