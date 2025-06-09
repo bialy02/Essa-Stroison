@@ -19,11 +19,11 @@ def match_guitar_note(freq):
     target_freq = GUITAR_NOTES[closest_note]
     diff = freq - target_freq
     if abs(diff) < 1:
-        status = "in tune"
+        status = "Nastrojona"
     elif diff > 0:
-        status = "too high"
+        status = "Za wysoko"
     else:
-        status = "too low"
+        status = "Za nisko"
     return closest_note, status, round(diff, 2), target_freq
 
 
